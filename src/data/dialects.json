@@ -1,0 +1,50 @@
+{
+  "en": [
+    "American English",
+    "British English",
+    "Australian English",
+    "Canadian English"
+  ],
+  "ja": [
+    "Standard Japanese",
+    "Kansai Dialect",
+    "Tohoku Dialect",
+    "Hakata Dialect",
+    "Hiroshima Dialect",
+    "Osaka Dialect",
+    "Kyoto Dialect",
+    "Nagoya Dialect",
+    "Hokkaido Dialect",
+    "Shikoku Dialect",
+    "Fukuoka Dialect",
+    "Okinawan Japanese",
+    "Aomori Dialect",
+    "Kagoshima Dialect",
+    "Niigata Dialect",
+    "Yamagata Dialect",
+    "Miyazaki Dialect",
+    "Gifu Dialect",
+    "Akita Dialect"
+  ],
+  "es": [
+    "Spain Spanish",
+    "Puertrican Spanish",
+    "Castilian Spanish",
+    "Mexican Spanish",
+    "Argentinian Spanish",
+    "Colombian Spanish",
+    "Chilean Spanish",
+    "Peruvian Spanish",
+    "Venezuelan Spanish",
+    "Puerto Rican Spanish",
+    "Cuban Spanish",
+    "Dominican Spanish",
+    "Ecuadorian Spanish",
+    "Bolivian Spanish",
+    "Paraguayan Spanish",
+    "Uruguayan Spanish",
+    "Central American Spanish",
+    "Andalusian Spanish",
+    "Canarian Spanish"
+  ]
+}
