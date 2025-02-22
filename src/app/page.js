@@ -41,6 +41,49 @@ export default function Home() {
   const [isInputAudioLoading, setIsInputAudioLoading] = useState(false);
   const [isOutputAudioLoading, setIsOutputAudioLoading] = useState(false);
   const CHARACTER_LIMIT = 2000;
+  // Add these with your other state declarations
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [speakerPronouns, setSpeakerPronouns] = useState(null);
+  const [listenerPronouns, setListenerPronouns] = useState(null);
+  const [formalityLevel, setFormalityLevel] = useState("stranger");
+
+  const FORMALITY_LEVELS = {
+    stranger: "Use formal/polite speech.",
+    friend: "Use casual/informal speech.",
+    superior: "Use honorific/respectful language.",
+    child: "Use simple, friendly language.",
+  };
+
+  const PRONOUN_OPTIONS = [
+    { value: null, label: "Not specified" },
+    { value: "he/him", label: "he/him" },
+    { value: "she/her", label: "she/her" },
+    { value: "they/them", label: "they/them" },
+  ];
+
+  // Load advanced settings from localStorage
+  useEffect(() => {
+    const savedSettings = localStorage.getItem("translationAdvancedSettings");
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      setSpeakerPronouns(settings.speakerPronouns);
+      setListenerPronouns(settings.listenerPronouns);
+      setFormalityLevel(settings.formalityLevel);
+      setShowAdvanced(true); // Keep panel open if settings exist
+    }
+  }, []);
+
+  // Save settings when they change
+  useEffect(() => {
+    localStorage.setItem(
+      "translationAdvancedSettings",
+      JSON.stringify({
+        speakerPronouns,
+        listenerPronouns,
+        formalityLevel,
+      })
+    );
+  }, [speakerPronouns, listenerPronouns, formalityLevel]);
 
   // Load saved language preferences
   useEffect(() => {
@@ -50,6 +93,10 @@ export default function Home() {
         JSON.parse(savedPreferences);
       setSourceLang(savedSource);
       setTargetLang(savedTarget);
+      setSelectedDialect({
+        source: "",
+        target: "",
+      });
     }
   }, []);
 
@@ -162,6 +209,9 @@ export default function Home() {
             sourceLanguage: sourceLang.name,
             targetLanguage: targetLang.name,
             targetDialect: selectedDialect.target,
+            speakerPronouns, // Add these lines
+            listenerPronouns, // Add these lines
+            formality: formalityLevel, // Add these lines
           }),
         });
 
@@ -248,6 +298,13 @@ export default function Home() {
   const filteredLanguages = languagesData.languages.filter((lang) =>
     lang.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const resetAdvancedSettings = () => {
+    setSpeakerPronouns(null);
+    setListenerPronouns(null);
+    setFormalityLevel("stranger");
+    localStorage.removeItem("translationAdvancedSettings");
+  };
 
   return (
     <div className="w-full min-h-screen bg-gray-50 p-4 md:p-8 flex flex-col items-center">
@@ -347,23 +404,28 @@ export default function Home() {
               />
               <div className="flex justify-between items-center mt-2">
                 <div className="flex items-center gap-2">
-                  {inputText && (
-                    <button
-                      type="button"
-                      className="p-2 hover:bg-gray-100 rounded-full text-gray-600"
-                      onClick={() =>
-                        handleAudioClick(inputText, sourceLang.code, true)
-                      }
-                      disabled={isInputAudioLoading}
-                      title="Listen to input text"
-                    >
-                      {isInputAudioLoading ? (
-                        <RefreshCw className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <Volume2 className="w-5 h-5" />
-                      )}
-                    </button>
-                  )}
+                  {/* {inputText && ( */}
+                  <button
+                    type="button"
+                    className={
+                      !inputText || isInputAudioLoading
+                        ? "text-gray-300"
+                        : "p-2 hover:bg-gray-100 rounded-full text-gray-600"
+                    }
+                    // className="p-2 hover:bg-gray-100 rounded-full text-gray-600"
+                    onClick={() =>
+                      handleAudioClick(inputText, sourceLang.code, true)
+                    }
+                    disabled={!inputText || isInputAudioLoading}
+                    title="Listen to input text"
+                  >
+                    {isInputAudioLoading ? (
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Volume2 className="w-5 h-5" />
+                    )}
+                  </button>
+                  {/* )} */}
                 </div>
                 <div
                   className={`text-sm ${
@@ -375,6 +437,99 @@ export default function Home() {
                   {charCount}/{CHARACTER_LIMIT} characters
                 </div>
               </div>
+            </div>
+
+            {/* Advanced Settings */}
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="text-gray-600 hover:text-gray-800 flex items-center gap-2"
+              >
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    showAdvanced ? "transform rotate-180" : ""
+                  }`}
+                />
+                Advanced Settings
+              </button>
+
+              {showAdvanced && (
+                <div className="mt-2 p-4 bg-white rounded-lg border border-gray-200">
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Speaker Pronouns */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-sm text-gray-600">
+                        Speaker Pronouns
+                      </label>
+                      <select
+                        value={speakerPronouns || ""}
+                        onChange={(e) =>
+                          setSpeakerPronouns(e.target.value || null)
+                        }
+                        className="p-2 border rounded-md"
+                      >
+                        {PRONOUN_OPTIONS.map((option) => (
+                          <option key={option.label} value={option.value || ""}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Listener Pronouns */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-sm text-gray-600">
+                        Listener Pronouns
+                      </label>
+                      <select
+                        value={listenerPronouns || ""}
+                        onChange={(e) =>
+                          setListenerPronouns(e.target.value || null)
+                        }
+                        className="p-2 border rounded-md"
+                      >
+                        {PRONOUN_OPTIONS.map((option) => (
+                          <option key={option.label} value={option.value || ""}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Formality Level */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-sm text-gray-600">
+                        Formality Level
+                      </label>
+                      <select
+                        value={formalityLevel}
+                        onChange={(e) => setFormalityLevel(e.target.value)}
+                        className="p-2 border rounded-md"
+                      >
+                        {Object.entries(FORMALITY_LEVELS).map(
+                          ([key, value]) => (
+                            <option key={key} value={key}>
+                              {value}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </div>
+
+                    {/* Reset Button */}
+                    <div className="flex flex-col justify-end">
+                      <button
+                        type="button"
+                        onClick={resetAdvancedSettings}
+                        className="p-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                      >
+                        Reset Settings
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
@@ -406,7 +561,7 @@ export default function Home() {
                 className="text-blue-500 font-medium"
                 onClick={() => openLanguageModal("target")}
               >
-                {targetLang.name}
+                {targetLang.name} {selectedDialect.target}
               </button>
               {dialectsData[targetLang.code] && (
                 <div className="relative">
