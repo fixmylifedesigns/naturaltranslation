@@ -13,7 +13,16 @@ export async function POST(request) {
     } = await request.json();
 
     if (!text) {
-      return NextResponse.json({ error: "No text provided" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No text provided" },
+        {
+          status: 400,
+          headers: {
+            "Cache-Control":
+              "no-store, no-cache, must-revalidate, proxy-revalidate",
+          },
+        }
+      );
     }
 
     let prompt = `Translate the following text from ${sourceLanguage} to ${targetLanguage}${
@@ -115,7 +124,7 @@ export async function POST(request) {
 
     try {
       const jsonResponse = JSON.parse(data.choices[0].message.content.trim());
-        console.log(data)
+      console.log(data);
       // Validate the response has the required fields
       if (!jsonResponse.translation) {
         console.error("Invalid JSON response structure:", jsonResponse);

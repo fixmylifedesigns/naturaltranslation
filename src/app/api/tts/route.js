@@ -2,28 +2,25 @@ import { NextResponse } from "next/server";
 
 // Mapping of target languages to OpenAI TTS voices
 const TTS_VOICES = {
-  en: "alloy", // English
-  ja: "nova", // Japanese
-  es: "echo", // Spanish (fixing pronunciation)
-  fr: "shimmer", // French
-  de: "onyx", // German
-  zh: "fable", // Chinese
-  ko: "nova", // Korean
-  it: "shimmer", // Italian
-  pt: "echo", // Portuguese
-  ru: "onyx", // Russian
-  default: "alloy", // Fallback voice
+  en: "alloy",
+  ja: "nova",
+  es: "echo",
+  fr: "shimmer",
+  de: "onyx",
+  zh: "fable",
+  ko: "nova",
+  it: "shimmer",
+  pt: "echo",
+  ru: "onyx",
+  default: "alloy",
 };
 
 // Function to normalize text for better pronunciation
 const preprocessText = (text, language) => {
   if (language === "es") {
-    // Normalize Spanish text: remove accents for better pronunciation
-    return text
-      .normalize("NFD") // Decomposes characters
-      .replace(/[\u0300-\u036f]/g, ""); // Removes accents
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Removes accents
   }
-  return text; // Default behavior for other languages
+  return text;
 };
 
 export async function POST(request) {
@@ -31,7 +28,16 @@ export async function POST(request) {
     const { text, language } = await request.json();
 
     if (!text) {
-      return NextResponse.json({ error: "No text provided" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No text provided" },
+        {
+          status: 400,
+          headers: {
+            "Cache-Control":
+              "no-store, no-cache, must-revalidate, proxy-revalidate",
+          },
+        }
+      );
     }
 
     // Select the correct voice model
@@ -58,7 +64,13 @@ export async function POST(request) {
       const errorData = await response.json();
       return NextResponse.json(
         { error: errorData.error?.message || "Error from OpenAI API" },
-        { status: response.status }
+        {
+          status: response.status,
+          headers: {
+            "Cache-Control":
+              "no-store, no-cache, must-revalidate, proxy-revalidate",
+          },
+        }
       );
     }
 
@@ -68,13 +80,23 @@ export async function POST(request) {
       headers: {
         "Content-Type": "audio/mpeg",
         "Content-Length": audioBuffer.byteLength.toString(),
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
       },
     });
   } catch (error) {
     console.error("TTS API Error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          "Cache-Control":
+            "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      }
     );
   }
 }
